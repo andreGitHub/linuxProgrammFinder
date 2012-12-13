@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <dirent.h>
 
 char * strdub(char * str){
 	int len = strlen(str);
@@ -12,7 +13,12 @@ char * strdub(char * str){
 	return buff;
 }
 
-int main(){
+int main(int argc, char** argv){
+	if(argc != 2){
+		printf("no program to search for\n");
+		exit(0);
+	}
+	char * programName = argv[1];	
 	char * readSystemPath = getenv("PATH");
 	int systemPathLen = strlen(readSystemPath);
 	char * systemPath = malloc(systemPathLen * sizeof(char));
@@ -47,8 +53,21 @@ int main(){
 	strcpy(path,systemPath);
 	paths[anz] = path;
 
+	//search in folders
 	for(i=0;i<=anz;i++){
-		printf("%s\n",paths[i]);
+		//printf("   %s\n",paths[i]);
+		DIR* curDir = opendir(paths[i]);
+		struct dirent* dirEntry = NULL;
+
+		while((dirEntry = readdir(curDir)) != NULL){
+			if( strcmp(dirEntry->d_name, programName) == 0) {
+				printf("%s/%s\n", paths[i], dirEntry->d_name);
+			}
+		}
+
+		if(closedir(curDir) != 0){
+			printf("error while closing directory\n");
+		}
 	}
 	
 	return 0;
